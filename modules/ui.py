@@ -397,6 +397,9 @@ def update_token_counter(text, steps):
 def create_toprow(is_img2img):
     id_part = "img2img" if is_img2img else "txt2img"
 
+    _ = gr.HTML("<div>Note: this is _not_ based on Waifu, so tags should be specified as in the original dataset (i.e. <q>1girl</q> instead of <q>1 girl</q>, <q>solo_focus</q> instead of <q>solo focus</q>)</div>\
+            <div>Also, functionality related to upweighting/downweighting terms with parentheses is not supported.</div>")
+
     with gr.Row(elem_id="toprow"):
         with gr.Column(scale=4):
             with gr.Row():
@@ -488,7 +491,7 @@ def create_ui(wrap_gradio_gpu_call):
                 augmentation = gr.Checkbox(label='Prompt augmentation', value=True)
                 max_augmentation = gr.Slider(label='Max prompt length after augmentation', minimum=10, maximum=50, step=1, value=50)
 
-                steps = gr.Slider(minimum=1, maximum=150, step=1, label="Sampling Steps", value=80)
+                steps = gr.Slider(minimum=1, maximum=150, step=1, label="Sampling Steps", value=40)
                 sampler_index = gr.Radio(label='Sampling method', elem_id="txt2img_sampling", choices=[x.name for x in samplers], value=samplers[0].name, type="index")
 
                 with gr.Group():

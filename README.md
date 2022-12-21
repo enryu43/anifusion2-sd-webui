@@ -1,8 +1,8 @@
 **Fork of https://github.com/AUTOMATIC1111/stable-diffusion-webui/, all credit goes to them.**
 
-The only difference is adapting the code for https://medium.com/@enryu9000/anifusion-diffusion-models-for-anime-pictures-138cf1af2cbe.
+The only difference is adapting the code for https://medium.com/@enryu9000/TODO.
 
-Installation: https://gist.github.com/enryu43/858999bf69dc92b97fdad6137c3c45e6
+Installation: https://gist.github.com/enryu43/fccaa7f165ffcb214780d203c565761f
 
 Afterwards, just run `python webui.py`.
 
