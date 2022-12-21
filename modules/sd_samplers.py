@@ -8,6 +8,7 @@ import k_diffusion.sampling
 import ldm.models.diffusion.ddim
 import ldm.models.diffusion.plms
 from modules import prompt_parser
+from imwatermark import WatermarkEncoder
 
 from modules.shared import opts, cmd_opts, state
 import modules.shared as shared
@@ -56,12 +57,25 @@ def setup_img2img_steps(p, steps=None):
     return steps, t_enc
 
 
+def put_watermark(img, wm_encoder=None):
+    if wm_encoder is not None:
+        img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        img = wm_encoder.encode(img, 'dwtDct')
+        img = Image.fromarray(img[:, :, ::-1])
+    return img
+
+
 def sample_to_image(samples):
+    wm = "AnifusionV2"
+    wm_encoder = WatermarkEncoder()
+    wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
     x_sample = shared.sd_model.decode_first_stage(samples[0:1].type(shared.sd_model.dtype))[0]
     x_sample = torch.clamp((x_sample + 1.0) / 2.0, min=0.0, max=1.0)
     x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
     x_sample = x_sample.astype(np.uint8)
-    return Image.fromarray(x_sample)
+    img = Image.fromarray(x_sample)
+    img = put_watermark(img, wm_encoder)
+    return img
 
 
 def store_latent(decoded):

@@ -10,6 +10,7 @@ from PIL import Image, ImageFilter, ImageOps
 import random
 import cv2
 from skimage import exposure
+from imwatermark import WatermarkEncoder
 
 import modules.sd_hijack
 from modules import devices, prompt_parser, masking
@@ -46,6 +47,15 @@ def apply_color_correction(correction, image):
     ), cv2.COLOR_LAB2RGB).astype("uint8"))
 
     return image
+
+
+
+def put_watermark(img, wm_encoder=None):
+    if wm_encoder is not None:
+        img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        img = wm_encoder.encode(img, 'dwtDct')
+        img = Image.fromarray(img[:, :, ::-1])
+    return img
 
 
 class StableDiffusionProcessing:
@@ -396,6 +406,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                 import modules.safety as safety
                 x_samples_ddim = modules.safety.censor_batch(x_samples_ddim)
 
+            wm = "AnifusionV2"
+            wm_encoder = WatermarkEncoder()
+            wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
             for i, x_sample in enumerate(x_samples_ddim):
                 x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
                 x_sample = x_sample.astype(np.uint8)
@@ -412,6 +425,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
                 if p.color_corrections is not None and i < len(p.color_corrections):
                     if opts.save and not p.do_not_save_samples and opts.save_images_before_color_correction:
+                        image = put_watermark(image, wm_encoder)
                         images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], opts.samples_format, info=infotext(n, i), p=p, suffix="-before-color-correction")
                     image = apply_color_correction(p.color_corrections[i], image)
 
@@ -429,6 +443,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
                     image.alpha_composite(overlay)
                     image = image.convert('RGB')
 
+
+                image = put_watermark(image, wm_encoder)
                 if opts.samples_save and not p.do_not_save_samples:
                     images.save_image(image, p.outpath_samples, "", seeds[i], prompts[i], opts.samples_format, info=infotext(n, i), p=p)
 
@@ -512,10 +528,14 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 lowres_samples = torch.clamp((decoded_samples + 1.0) / 2.0, min=0.0, max=1.0)
 
                 batch_images = []
+                wm = "AnifusionV2"
+                wm_encoder = WatermarkEncoder()
+                wm_encoder.set_watermark('bytes', wm.encode('utf-8'))
                 for i, x_sample in enumerate(lowres_samples):
                     x_sample = 255. * np.moveaxis(x_sample.cpu().numpy(), 0, 2)
                     x_sample = x_sample.astype(np.uint8)
                     image = Image.fromarray(x_sample)
+                    image = put_watermark(image, wm_encoder)
                     image = images.resize_image(0, image, self.width, self.height)
                     image = np.array(image).astype(np.float32) / 255.0
                     image = np.moveaxis(image, 2, 0)
