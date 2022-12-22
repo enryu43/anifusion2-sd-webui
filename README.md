@@ -1,6 +1,6 @@
 **Fork of https://github.com/AUTOMATIC1111/stable-diffusion-webui/, all credit goes to them.**
 
-The only difference is adapting the code for https://medium.com/@enryu9000/TODO.
+The only difference is adapting the code for https://medium.com/@enryu9000/anifusion-sd-91a59431a6dd.
 
 Installation: https://gist.github.com/enryu43/fccaa7f165ffcb214780d203c565761f
 
